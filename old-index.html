@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coming in May 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            font-family: 'DM Sans', sans-serif;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .hex {
+            color: #00ff00;
+            font-size: clamp(1rem, 5vw, 2rem);
+            font-weight: bold;
+            font-family: monospace;
+            filter: blur(10px);
+            animation: pixelate 3s forwards;
+            letter-spacing: 0.2em;
+            text-align: center;
+            transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0 1rem;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: visible;
+            width: auto;
+        }
+
+        .hex.compressed {
+            letter-spacing: -0.5em;
+        }
+
+        .hex span {
+            display: inline-block;
+            transition: all 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .hex .scrambled {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .hex .unscrambled {
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .hex .revealed {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .title {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 1s ease;
+            white-space: nowrap;
+            visibility: hidden;
+        }
+
+        @keyframes pixelate {
+            0% {
+                filter: blur(10px);
+            }
+            20% {
+                filter: blur(8px);
+            }
+            40% {
+                filter: blur(6px);
+            }
+            60% {
+                filter: blur(4px);
+            }
+            80% {
+                filter: blur(2px);
+            }
+            100% {
+                filter: blur(0);
+            }
+        }
+
+        @media (max-width: 380px) {
+            .hex {
+                font-size: 0.8rem;
+                letter-spacing: 0.1em;
+            }
+            .hex.compressed {
+                letter-spacing: -0.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hex">556E666F72676561626C65</div>
+    <div class="title">Coming in May 2025</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const elements = document.querySelectorAll('.hex, .title');
+            const hexElement = document.querySelector('.hex');
+            const titleElement = document.querySelector('.title');
+            const hexText = hexElement.textContent;
+            const word = "UNFORGEABLE";
+            
+            // Calculate center position once at the start
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const centerX = windowWidth / 2;
+            const centerY = windowHeight / 2;
+            
+            // Position both elements absolutely based on calculated center
+            hexElement.style.left = `${centerX}px`;
+            hexElement.style.top = `${centerY}px`;
+            titleElement.style.left = `${centerX}px`;
+            titleElement.style.top = `${centerY + 48}px`; // 3rem = 48px
+
+            function flicker() {
+                hexElement.style.filter = 'blur(10px)';
+                setTimeout(() => {
+                    hexElement.style.animation = 'pixelate 3s forwards';
+                }, 100);
+            }
+
+            function transformText() {
+                // Calculate the total width of the final text to ensure centering
+                const tempSpan = document.createElement('span');
+                tempSpan.style.visibility = 'hidden';
+                tempSpan.style.position = 'absolute';
+                tempSpan.style.fontSize = getComputedStyle(hexElement).fontSize;
+                tempSpan.style.fontFamily = "'DM Sans', sans-serif";
+                tempSpan.style.letterSpacing = '-0.5em';
+                tempSpan.style.display = 'inline-block';
+                tempSpan.textContent = word;
+                document.body.appendChild(tempSpan);
+                const finalTextWidth = tempSpan.getBoundingClientRect().width;
+                document.body.removeChild(tempSpan);
+
+                // Create spans for each hex pair and letter
+                let html = '';
+                for (let i = 0; i < word.length; i++) {
+                    const hexIndex = i * 2;
+                    const hexPair1 = hexText.substr(hexIndex, 2);
+                    html += `
+                        <span class="scrambled">${hexPair1}</span>
+                        <span class="unscrambled">${word[i]}</span>
+                    `;
+                }
+                hexElement.innerHTML = html;
+
+                // After animation completes, start transformation
+                setTimeout(() => {
+                    const scrambledSpans = hexElement.querySelectorAll('.scrambled');
+                    const unscrambledSpans = hexElement.querySelectorAll('.unscrambled');
+                    
+                    let revealedCount = 0;
+                    unscrambledSpans.forEach((span, index) => {
+                        setTimeout(() => {
+                            scrambledSpans[index].style.opacity = '0';
+                            scrambledSpans[index].style.transform = 'scale(0)';
+                            span.classList.add('revealed');
+                            
+                            revealedCount++;
+                            if (revealedCount === unscrambledSpans.length) {
+                                setTimeout(() => {
+                                    hexElement.classList.add('compressed');
+                                    
+                                    // Don't set explicit width, let it be determined by content
+                                    hexElement.style.left = '50%';
+                                    
+                                    setTimeout(() => {
+                                        titleElement.style.visibility = 'visible';
+                                        titleElement.style.opacity = '1';
+                                    }, 1500);
+                                }, 200);
+                            }
+                        }, index * 120);
+                    });
+                }, 3000);
+            }
+
+            flicker();
+            transformText();
+        });
+    </script>
+</body>
+</html>

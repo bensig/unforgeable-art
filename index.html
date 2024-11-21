@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="Unforgeable.art">
+  <meta property="og:description" content="The world's first and only collection of unforgeable art. Coming in May 2025">
+  <meta property="og:type" content="website">
+  <title>Unforgeable.art</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #container {
+      text-align: center;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #title {
+      font-size: 3rem;
+      color: gold;
+      text-transform: uppercase;
+      opacity: 0;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      transition: all 1s ease;
+      transform: translateX(-0.9ch); /* Offset half the compressed margin to center */
+    }
+
+    #subtitle {
+      font-size: 1.5rem;
+      color: grey;
+      margin-top: 4rem;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+
+    .char-container {
+      position: relative;
+      width: 3ch;
+      text-align: center;
+      margin: 0;
+      transition: margin 1s ease;
+    }
+
+    .hex-char, .text-char {
+      position: absolute;
+      left: 0;
+      right: 0;
+      transition: all 0.5s ease;
+    }
+
+    .hex-char {
+      opacity: 1;
+    }
+
+    .text-char {
+      opacity: 0;
+      color: white;
+    }
+
+    .revealed .hex-char {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    .revealed .text-char {
+      opacity: 1;
+    }
+
+    .compressed .char-container {
+      margin-right: -1.8ch;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <div id="title"></div>
+    <div id="subtitle">Coming in May 2025</div>
+  </div>
+
+  <script>
+    const titleText = "unforgeable.art";
+    const titleElement = document.getElementById("title");
+    const subtitleElement = document.getElementById("subtitle");
+
+    function transformText() {
+      // Convert text to hex pairs
+      const hexText = Array.from(titleText)
+        .map(char => char.charCodeAt(0).toString(16))
+        .join('');
+
+      // Create spans for each hex pair and letter
+      let html = '';
+      for (let i = 0; i < titleText.length; i++) {
+        const hexPair = hexText.substr(i * 2, 2);
+        html += `<span class="char-container">
+          <span class="hex-char">${hexPair}</span>
+          <span class="text-char">${titleText[i]}</span>
+        </span>`;
+      }
+      titleElement.innerHTML = html;
+      titleElement.style.opacity = 1;
+
+      // Reveal each character one by one
+      const charContainers = titleElement.children;
+      Array.from(charContainers).forEach((container, index) => {
+        setTimeout(() => {
+          container.classList.add('revealed');
+          
+          // After all characters are revealed, compress the spacing
+          if (index === charContainers.length - 1) {
+            setTimeout(() => {
+              titleElement.classList.add('compressed');
+              
+              // Show subtitle after compression
+              setTimeout(() => {
+                subtitleElement.style.opacity = 1;
+              }, 1000);
+            }, 500);
+          }
+        }, index * 100);
+      });
+    }
+
+    // Start the animation
+    transformText();
+  </script>
+</body>
+</html>
