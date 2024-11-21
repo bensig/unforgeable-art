@@ -33,12 +33,19 @@
       font-size: 3rem;
       color: gold;
       text-transform: uppercase;
-      opacity: 0;
       position: relative;
       display: flex;
       justify-content: center;
-      transition: all 1s ease;
-      transform: translateX(-0.9ch); /* Offset half the compressed margin to center */
+      transform: translateX(-0.9ch);
+    }
+
+    .hex-char {
+      filter: blur(8px);
+      transition: filter 2s ease;
+    }
+
+    #title.clear .hex-char {
+      filter: blur(0);
     }
 
     #subtitle {
@@ -46,7 +53,7 @@
       color: grey;
       margin-top: 4rem;
       opacity: 0;
-      transition: opacity 1s ease;
+      transition: opacity 2s ease;
     }
 
     .char-container {
@@ -54,35 +61,37 @@
       width: 3ch;
       text-align: center;
       margin: 0;
-      transition: margin 1s ease;
+      transition: margin 1.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .hex-char, .text-char {
       position: absolute;
       left: 0;
       right: 0;
-      transition: all 0.5s ease;
     }
 
     .hex-char {
-      opacity: 1;
+      display: block;
     }
 
     .text-char {
-      opacity: 0;
+      display: none;
       color: white;
     }
 
     .revealed .hex-char {
-      opacity: 0;
-      transform: scale(0);
+      display: none;
     }
 
     .revealed .text-char {
-      opacity: 1;
+      display: block;
     }
 
     .compressed .char-container {
+      margin-right: -2.2ch;
+    }
+
+    .final-spacing .char-container {
       margin-right: -1.8ch;
     }
   </style>
@@ -97,6 +106,27 @@
     const titleText = "unforgeable.art";
     const titleElement = document.getElementById("title");
     const subtitleElement = document.getElementById("subtitle");
+    
+    function getRandomChar() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+      return chars[Math.floor(Math.random() * chars.length)];
+    }
+
+    function scrambleText(element, finalChar, duration = 1000, fps = 30) {
+      const interval = 1000 / fps;
+      const steps = duration / interval;
+      let step = 0;
+
+      const scrambleInterval = setInterval(() => {
+        if (step >= steps - 1) {
+          element.textContent = finalChar;
+          clearInterval(scrambleInterval);
+        } else {
+          element.textContent = getRandomChar();
+        }
+        step++;
+      }, interval);
+    }
 
     function transformText() {
       // Convert text to hex pairs
@@ -114,27 +144,36 @@
         </span>`;
       }
       titleElement.innerHTML = html;
-      titleElement.style.opacity = 1;
-
-      // Reveal each character one by one
-      const charContainers = titleElement.children;
-      Array.from(charContainers).forEach((container, index) => {
+      
+      // Start animation sequence immediately
+      setTimeout(() => {
+        titleElement.classList.add('clear');
+        
         setTimeout(() => {
-          container.classList.add('revealed');
-          
-          // After all characters are revealed, compress the spacing
-          if (index === charContainers.length - 1) {
+          const charContainers = titleElement.children;
+          Array.from(charContainers).forEach((container, index) => {
             setTimeout(() => {
-              titleElement.classList.add('compressed');
+              container.classList.add('revealed');
+              const textChar = container.querySelector('.text-char');
+              scrambleText(textChar, titleText[index], 500);
               
-              // Show subtitle after compression
-              setTimeout(() => {
-                subtitleElement.style.opacity = 1;
-              }, 1000);
-            }, 500);
-          }
-        }, index * 100);
-      });
+              if (index === charContainers.length - 1) {
+                setTimeout(() => {
+                  titleElement.classList.add('compressed');
+                  
+                  setTimeout(() => {
+                    titleElement.classList.add('final-spacing');
+                    
+                    setTimeout(() => {
+                      subtitleElement.style.opacity = 1;
+                    }, 1500);
+                  }, 1500);
+                }, 1000); // Reduced from 3000 to 1000 for smoother transition
+              }
+            }, index * 200);
+          });
+        }, 2000);
+      }, 500);
     }
 
     // Start the animation
