@@ -35,10 +35,11 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      max-width: 90vw; /* Prevent container from getting too wide */
     }
 
     #title {
-      font-size: calc(2.5rem + 1vw); /* Responsive font size */
+      font-size: min(calc(2.5rem + 1vw), 5rem); /* Cap the maximum font size */
       color: gold;
       text-transform: uppercase;
       position: relative;
@@ -59,7 +60,7 @@
     #subtitle {
       font-size: 1.5rem;
       color: grey;
-      margin-top: 4rem;
+      margin-top: calc(4rem + 2vw); /* Increase margin as viewport gets wider */
       opacity: 0;
       transition: opacity 2s ease;
     }
